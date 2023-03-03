@@ -1,8 +1,10 @@
 from glob import glob
 from bs4 import BeautifulSoup
 from markdownify import markdownify as md
-import json 
-import os
+import json, os, sys
+
+def python_version():
+    return f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}" 
 
 def init_nb():
     return {
@@ -14,7 +16,7 @@ def init_nb():
     },
     "language_info": {
         "name": "python",
-        "version": "3.9.16"
+        "version": python_version()
     },
     },
     "nbformat": 4,
@@ -49,8 +51,7 @@ def add_code_cell(cell, notebook):
     return notebook
 
 def add_markdown_cell(cell, notebook):
-    content = str (cell.find(class_='jp-MarkdownOutput'))
-    #content = ''.join(line.strip('/n') for line in content)    
+    content = str (cell.find(class_='jp-MarkdownOutput'))   
     content = "".join(line.strip() for line in content.split("\n"))
     source = md(content, heading_style="ATX")
     notebook["cells"].append(
@@ -78,19 +79,21 @@ def html_to_ipynb(file, notebook):
 
 def save_ipynb(file_name, notebook, out_dir='out'):
     file_name = file_name.split('/')
-    file_name = './'  + out_dir + '/' + file_name[-1]
+    file_name = f'./{out_dir}/{file_name[-1]}'
 
     if not out_dir in os.listdir('./'):
-        os.mkdir('./' + out_dir)
+        os.mkdir(f'./{out_dir}')
     with open(file_name.replace('.html', '.ipynb'), "w") as outfile:
         json.dump(notebook, outfile)
 
-file_names = glob('./html/*html')
-# print(file_names[1].replace('.html', '.json'))
-for file in file_names:
-    # initialise a new notebook json
-    notebook = init_nb()
 
-    notebook = html_to_ipynb(file, notebook)
+if __name__ == '__main__':
+    file_names = glob('./html/*html')
 
-    save_ipynb(file, notebook)
+    for file in file_names:
+        # initialise a new notebook json
+        notebook = init_nb()
+
+        notebook = html_to_ipynb(file, notebook)
+
+        save_ipynb(file, notebook)
