@@ -94,6 +94,3 @@ for file in file_names:
     notebook = html_to_ipynb(file, notebook)
 
     save_ipynb(file, notebook)
-    
-    
-
